@@ -15,13 +15,9 @@ import json
 st.set_page_config(page_title="AI Financial Intelligence", page_icon="📈", layout="wide")
 
 # --- Setup API Keys ---
-# Securely fetching from .streamlit/secrets.toml to avoid GitHub leaks
-try:
-    NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-except Exception:
-    NEWS_API_KEY = "YOUR_KEY"
-    GEMINI_API_KEY = "YOUR_KEY"
+# Replace with your actual API keys
+NEWS_API_KEY = "ef4bd49321a84c068a584f457d5a33d5"
+GEMINI_API_KEY = "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U"
 
 # --- NLTK Downloads ---
 @st.cache_resource
@@ -143,7 +139,7 @@ def gemini_batch_analysis(texts):
         "recommendation": "Monitor"
     } for _ in texts]
     
-    if GEMINI_API_KEY == "YOUR_KEY" or not texts:
+    if GEMINI_API_KEY == "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U" or not texts:
         return default_res
         
     prompt = """
@@ -326,7 +322,8 @@ if not df.empty:
     sector_counts = {}
     for sectors in filtered_df['sector']:
         for s in sectors:
-            sector_counts[s] = sector_counts.get(s, 0) + 1
+            if s in selected_sectors:
+                sector_counts[s] = sector_counts.get(s, 0) + 1
     most_impacted = max(sector_counts, key=sector_counts.get) if sector_counts else "N/A"
     
     avg_impact = filtered_df['impact_score'].mean() if total_news > 0 else 0
