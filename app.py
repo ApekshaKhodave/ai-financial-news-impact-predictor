@@ -452,6 +452,7 @@ if not df.empty:
                 plot_bgcolor="rgba(0,0,0,0)",
                 font=dict(color="white")
             )
+            fig.update_traces(textfont_color='white')
             st.plotly_chart(fig, use_container_width=True)
             
     st.markdown("---")
