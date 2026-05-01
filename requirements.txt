@@ -1,0 +1,8 @@
+streamlit
+pandas
+numpy
+requests
+nltk
+scikit-learn
+matplotlib
+google-generativeai
