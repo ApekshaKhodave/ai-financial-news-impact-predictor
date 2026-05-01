@@ -88,9 +88,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Setup API Keys ---
-# Replace with your actual API keys
+# Using hardcoded keys as defaults; user can override in sidebar
+DEFAULT_GEMINI_KEY = "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U"
 NEWS_API_KEY = "ef4bd49321a84c068a584f457d5a33d5"
-GEMINI_API_KEY = "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U"
 
 # --- NLTK Downloads ---
 @st.cache_resource
@@ -101,11 +101,6 @@ def download_nltk_data():
     nltk.download('stopwords', quiet=True)
 
 download_nltk_data()
-
-# Initialize tools
-sia = SentimentIntensityAnalyzer()
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-2.5-flash')
 
 # 1. SMART NEWS FETCHING MODULE
 def fetch_news(query="finance OR stock OR banking OR economy", num_articles=15):
@@ -201,7 +196,7 @@ def classify_sector(text):
     return matched_sectors, sector_impact
 
 # 5. GEMINI AI INSIGHT ENGINE
-def gemini_batch_analysis(texts):
+def gemini_batch_analysis(texts, api_key):
     """Prompts Gemini API for deep insights on multiple articles at once in a JSON array."""
     default_res = [{
         "summary": "Sample summary generated locally.",
@@ -212,28 +207,31 @@ def gemini_batch_analysis(texts):
         "recommendation": "Monitor"
     } for _ in texts]
     
-    if GEMINI_API_KEY == "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U" or not texts:
+    if not api_key or api_key == DEFAULT_GEMINI_KEY or not texts:
         return default_res
         
-    prompt = """
-    Analyze the following financial news articles.
-    Return ONLY a valid JSON ARRAY of objects, where each object corresponds to an article in the exact same order.
-    Do not use markdown wrappers like ```json.
-    
-    Required keys for EACH object:
-    - "summary": (1-line news summary)
-    - "emotion": (Choose from: Fear, Optimism, Growth, Risk, Neutral)
-    - "business_impact": (short explanation)
-    - "risk_level": (Low, Medium, or High)
-    - "opportunity_level": (Low, Medium, or High)
-    - "recommendation": (Invest, Hold, Avoid, or Monitor)
-    
-    Articles:
-    """
-    for i, t in enumerate(texts):
-        prompt += f"[{i}] {t}\n\n"
-        
     try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        prompt = """
+        Analyze the following financial news articles.
+        Return ONLY a valid JSON ARRAY of objects, where each object corresponds to an article in the exact same order.
+        Do not use markdown wrappers like ```json.
+        
+        Required keys for EACH object:
+        - "summary": (1-line news summary)
+        - "emotion": (Choose from: Fear, Optimism, Growth, Risk, Neutral)
+        - "business_impact": (short explanation)
+        - "risk_level": (Low, Medium, or High)
+        - "opportunity_level": (Low, Medium, or High)
+        - "recommendation": (Invest, Hold, Avoid, or Monitor)
+        
+        Articles:
+        """
+        for i, t in enumerate(texts):
+            prompt += f"[{i}] {t}\n\n"
+            
         response = model.generate_content(prompt)
         res_text = response.text.strip()
         if res_text.startswith("```json"):
@@ -250,7 +248,7 @@ def gemini_batch_analysis(texts):
     except Exception as e:
         for res in default_res:
             res["summary"] = f"AI Error: {str(e)}"
-            res["business_impact"] = "Failed to parse API response."
+            res["business_impact"] = "Failed to parse API response. Check your API key or rate limits."
         return default_res
 
 # 6. MARKET IMPACT PREDICTION MODULE
@@ -292,7 +290,7 @@ def calculate_impact(sentiment_score, sector_impact, text):
     return impact_label, round(final_score, 2)
 
 # Data Processing Wrapper
-def process_data(df):
+def process_data(df, gemini_key):
     if df.empty:
         return df
         
@@ -302,7 +300,9 @@ def process_data(df):
     
     # Send all texts to Gemini at once to avoid rate limits
     full_texts = [f"{row['title']}. {row['description']}" for _, row in df.iterrows()]
-    ai_insights_batch = gemini_batch_analysis(full_texts)
+    ai_insights_batch = gemini_batch_analysis(full_texts, gemini_key)
+    
+    sia = SentimentIntensityAnalyzer()
     
     for i in range(total):
         row = df.iloc[i]
@@ -348,6 +348,11 @@ st.markdown("---")
 
 # Sidebar
 st.sidebar.header("🧭 Navigation & Filters")
+
+# API Configuration
+st.sidebar.subheader("🔑 API Settings")
+user_gemini_key = st.sidebar.text_input("Gemini API Key", value=DEFAULT_GEMINI_KEY, type="password", help="Enter your Google Gemini API key to enable real AI insights.")
+
 if st.sidebar.button("🔄 Refresh News"):
     st.session_state['news_df'] = None
     st.rerun()
@@ -359,7 +364,7 @@ if 'news_df' not in st.session_state or st.session_state['news_df'] is None:
     with st.spinner("Fetching latest financial news..."):
         raw_df = fetch_news()
         if not raw_df.empty:
-            st.session_state['news_df'] = process_data(raw_df)
+            st.session_state['news_df'] = process_data(raw_df, user_gemini_key)
         else:
             st.session_state['news_df'] = pd.DataFrame()
 
