@@ -89,8 +89,8 @@ st.markdown("""
 
 # --- Setup API Keys ---
 # Using Streamlit Secrets for a cleaner UI and better security
-NEWS_API_KEY = st.secrets.get("NEWS_API_KEY", "ef4bd49321a84c068a584f457d5a33d5")
-GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U")
+NEWS_API_KEY = st.secrets.get("NEWS_API_KEY", "")
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
 
 # --- NLTK Downloads ---
 @st.cache_resource
