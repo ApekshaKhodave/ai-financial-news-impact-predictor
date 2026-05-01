@@ -110,7 +110,7 @@ model = genai.GenerativeModel('gemini-2.5-flash')
 # 1. SMART NEWS FETCHING MODULE
 def fetch_news(query="finance OR stock OR banking OR economy", num_articles=15):
     """Fetches real-time financial news using NewsAPI."""
-    if NEWS_API_KEY == "YOUR_KEY":
+    if not NEWS_API_KEY or NEWS_API_KEY == "YOUR_KEY":
         st.warning("NewsAPI Key is not set. Using sample data for preview.")
         return pd.DataFrame([
             {"title": "Global Tech Stocks Surge Amid AI Boom", "description": "Technology shares hit record highs as artificial intelligence continues to drive global market indices upward. Investors are highly optimistic."},
@@ -212,7 +212,7 @@ def gemini_batch_analysis(texts):
         "recommendation": "Monitor"
     } for _ in texts]
     
-    if GEMINI_API_KEY == "AIzaSyBmf-7oQkbGDllDu0BfCPCftvMwqui-y_U" or not texts:
+    if not GEMINI_API_KEY or GEMINI_API_KEY == "YOUR_KEY" or not texts:
         return default_res
         
     prompt = """
