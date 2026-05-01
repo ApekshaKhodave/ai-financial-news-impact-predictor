@@ -24,6 +24,16 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
+    /* Main Title Styling */
+    .main-title {
+        font-size: 3rem !important;
+        font-weight: 900 !important;
+        background: -webkit-linear-gradient(45deg, #fbc2eb 0%, #a6c1ee 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
     /* Metric / KPI Styling */
     div[data-testid="stMetricValue"] {
         font-size: 2.2rem !important;
@@ -332,7 +342,7 @@ def process_data(df):
 
 # --- STREAMLIT DASHBOARD UI ---
 
-st.title("💡 AI Financial Intelligence & Market Impact Predictor")
+st.markdown("<h1 class='main-title'>💡 AI Financial Intelligence & Market Impact Predictor</h1>", unsafe_allow_html=True)
 st.markdown("An advanced AI-powered dashboard that fetches, analyzes, and predicts financial news impact using NLP and Gemini AI.")
 st.markdown("---")
 
