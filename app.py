@@ -343,7 +343,7 @@ def process_data(df):
 # --- STREAMLIT DASHBOARD UI ---
 
 st.markdown("<h1 class='main-title'>💡 AI Financial Intelligence & Market Impact Predictor</h1>", unsafe_allow_html=True)
-st.markdown("An advanced AI-powered dashboard that fetches, analyzes, and predicts financial news impact using NLP and Gemini AI.")
+st.markdown("An advanced AI-powered dashboard that fetches, analyzes, and predicts financial news impact")
 st.markdown("---")
 
 # Sidebar
