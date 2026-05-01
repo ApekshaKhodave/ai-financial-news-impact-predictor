@@ -8,11 +8,74 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import string
 import google.generativeai as genai
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 import json
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="AI Financial Intelligence", page_icon="📈", layout="wide")
+
+# --- UI STYLING ---
+st.markdown("""
+<style>
+    /* Global Background and Typography */
+    .stApp {
+        background: linear-gradient(135deg, #0e1117 0%, #1a1e24 100%);
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Metric / KPI Styling */
+    div[data-testid="stMetricValue"] {
+        font-size: 2.2rem !important;
+        font-weight: 800 !important;
+        background: -webkit-linear-gradient(45deg, #4facfe, #00f2fe);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    div[data-testid="stMetricLabel"] {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        color: #a0aec0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Cards and Glassmorphism */
+    div[data-testid="stMetric"] {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Button Styling */
+    .stButton>button {
+        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- Setup API Keys ---
 # Replace with your actual API keys
@@ -341,20 +404,45 @@ if not df.empty:
     
     with chart_col1:
         if sector_counts:
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.bar(sector_counts.keys(), sector_counts.values(), color='#4C72B0')
-            ax.set_title('News Count per Sector')
-            ax.set_ylabel('Count')
-            plt.xticks(rotation=45)
-            st.pyplot(fig)
+            fig = px.bar(
+                x=list(sector_counts.keys()), 
+                y=list(sector_counts.values()), 
+                color=list(sector_counts.keys()),
+                color_discrete_sequence=px.colors.qualitative.Pastel,
+                labels={'x': 'Sector', 'y': 'Count'},
+                title="📈 News Count per Sector"
+            )
+            fig.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", 
+                plot_bgcolor="rgba(0,0,0,0)", 
+                showlegend=False,
+                font=dict(color="white")
+            )
+            st.plotly_chart(fig, use_container_width=True)
             
     with chart_col2:
         sentiment_dist = filtered_df['sentiment'].value_counts()
         if not sentiment_dist.empty:
-            fig, ax = plt.subplots(figsize=(6, 4))
-            ax.pie(sentiment_dist.values, labels=sentiment_dist.index, autopct='%1.1f%%', startangle=90, colors=['#55A868', '#C44E52', '#8172B3', '#937860', '#CCB974'])
-            ax.set_title('Sentiment Distribution')
-            st.pyplot(fig)
+            fig = px.pie(
+                names=sentiment_dist.index, 
+                values=sentiment_dist.values, 
+                hole=0.4, 
+                title="🎭 Sentiment Distribution",
+                color=sentiment_dist.index,
+                color_discrete_map={
+                    "Strong Positive": "#00CC96",
+                    "Mild Positive": "#636EFA",
+                    "Neutral": "#AB63FA",
+                    "Mild Negative": "#FFA15A",
+                    "Strong Negative": "#EF553B"
+                }
+            )
+            fig.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)", 
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="white")
+            )
+            st.plotly_chart(fig, use_container_width=True)
             
     st.markdown("---")
     
